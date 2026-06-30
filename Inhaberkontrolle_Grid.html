@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>§ 2c KWG — Notification vs. Disclosure Grid (Fund I LP)</title>
+<style>
+  :root{
+    --blue:#2E5C8A; --ink:#1c2733; --muted:#5b6776; --line:#d7dee6;
+    --notif:#1B8A5A;          /* GREEN  = notification required */
+    --disc:#1B3A6B;           /* DARK BLUE = disclosure (structure chart) */
+    --none:#EEF1F4;           /* neutral = no requirement */
+    --none-ink:#9aa4b0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f6f9;color:var(--ink);
+    font-family:Calibri,"Segoe UI",Arial,system-ui,sans-serif;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 22px 56px}
+  h1{font-size:24px;margin:0 0 4px;color:var(--blue)}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin-bottom:20px;box-shadow:0 1px 2px rgba(20,40,70,.04)}
+  .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+  .ctl label{font-weight:600;font-size:14px}
+  .ctl input[type=range]{flex:1;min-width:220px;accent-color:var(--blue)}
+  .sizeBox{font-variant-numeric:tabular-nums;font-weight:700;color:var(--blue);
+    font-size:18px;min-width:120px;text-align:right}
+  .presets{display:flex;gap:8px;flex-wrap:wrap}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:8px;
+    padding:6px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+  .presets button:hover{border-color:var(--blue);color:var(--blue)}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+  caption{caption-side:top;text-align:left;font-weight:600;color:var(--ink);
+    padding:0 0 10px;font-size:14px}
+  th,td{border:1px solid #fff;text-align:center;padding:0}
+  thead th{background:var(--blue);color:#fff;font-weight:600;padding:8px 6px;
+    border-color:#cfd8e2}
+  thead th.corner{background:#24405e}
+  tbody th{background:#f0f3f7;color:var(--ink);text-align:left;
+    padding:8px 10px;border-color:var(--line);white-space:nowrap}
+  tbody th small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+  td{height:46px;font-variant-numeric:tabular-nums;color:#fff;font-weight:600}
+  td .lt{font-size:13px;line-height:1.1}
+  td .band{display:block;font-size:9.5px;font-weight:700;opacity:.85;
+    letter-spacing:.3px;margin-top:1px}
+  td.notif{background:var(--notif)}
+  td.disc{background:var(--disc)}
+  td.none{background:var(--none);color:var(--none-ink);font-weight:500}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;font-size:13px}
+  .legend .item{display:flex;align-items:center;gap:8px}
+  .sw{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.08)}
+  .notes{font-size:12.5px;color:var(--muted);margin-top:18px;line-height:1.6}
+  .notes b{color:var(--ink)}
+  .axis-note{font-size:12px;color:var(--muted);margin:6px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Notification vs. Disclosure — Fund I LP</h1>
+  <p class="sub">German change-of-control regime (§ 2c KWG). Cell value = the LP&rsquo;s
+     <b>look-through holding in the bank</b> = (LP % of Fund I) × (Fund I % of bank).</p>
+
+  <div class="panel">
+    <div class="ctl">
+      <label for="size">Fund I total commitments</label>
+      <input id="size" type="range" min="800" max="4000" step="50" value="800">
+      <span class="sizeBox" id="sizeOut">€800M</span>
+    </div>
+    <div class="presets" style="margin-top:12px">
+      <button data-v="800">€800M (deal-sized for 40%)</button>
+      <button data-v="1500">€1.5bn</button>
+      <button data-v="2000">€2bn</button>
+      <button data-v="2500">€2.5bn</button>
+    </div>
+    <p class="hint">An LP ticket is a fixed € amount; its <b>% of Fund I</b> falls as the fund
+       grows. The bank is valued at €2bn (100% = €2bn). Increasing Fund I dilutes every LP and
+       pushes cells toward disclosure / no requirement.</p>
+  </div>
+
+  <div class="panel">
+    <div class="scroll">
+      <table id="grid">
+        <caption>Columns: Fund I&rsquo;s % of the bank &nbsp;·&nbsp; Rows: LP ticket (and resulting % of Fund I)</caption>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="axis-note">Row labels recompute live with the Fund I size above.</p>
+
+    <div class="legend">
+      <div class="item"><span class="sw" style="background:var(--notif)"></span>
+        <span><b>Notification required</b> &mdash; look-through ≥ 10% (own § 2c filing)</span></div>
+      <div class="item"><span class="sw" style="background:var(--disc)"></span>
+        <span><b>Disclosure only</b> &mdash; 0.5% &lt; look-through &lt; 10% (named in structure chart)</span></div>
+      <div class="item"><span class="sw" style="background:var(--none);border-color:#cfd6df"></span>
+        <span><b>No requirement</b> &mdash; look-through ≤ 0.5%</span></div>
+    </div>
+
+    <div class="notes">
+      <b>Reading the green cells:</b> the tag shows which further thresholds are crossed —
+      <b>≥20% / ≥30% / ≥50%</b> are separate notification points under § 2c KWG.<br>
+      <b>Control overlay (not shown):</b> if the LP&rsquo;s stake gives it <i>control</i> of Fund I
+      (majority votes, veto/consent over investments, board/appointment rights), the
+      multiplication result is replaced by <b>full attribution</b> of Fund I&rsquo;s entire bank
+      stake to the LP — e.g. the whole 40% column collapses to a 40% look-through regardless of the LP %.<br>
+      <b>Assumptions:</b> single fund branch, LP not acting in concert with others, the bank is a
+      CRR credit institution (ECB decides on BaFin&rsquo;s draft). This is an illustrative tool, not legal advice.
+    </div>
+  </div>
+</div>
+
+<script>
+  var fundCols = [10,20,30,40,50,60,70,80,90,100];          // Fund I % of bank
+  var lpAmounts = [25,50,75,100,150,200,300,400,500,800];   // €M LP ticket
+
+  var sizeEl = document.getElementById('size');
+  var sizeOut = document.getElementById('sizeOut');
+
+  function fmtMoney(m){ return m >= 1000 ? '€'+(m/1000).toFixed(m%1000?1:0)+'bn' : '€'+m+'M'; }
+  function fmtPct(p){
+    if (p === 0) return '0';
+    if (p < 1)  return p.toFixed(2).replace(/0$/,'') + '%';
+    return (Math.round(p*100)/100).toString().replace(/\.?0+$/,'') + '%';
+  }
+
+  function classify(lt){               // lt = look-through % in the bank
+    if (lt >= 10) return 'notif';
+    if (lt > 0.5) return 'disc';
+    return 'none';
+  }
+  function bandTag(lt){
+    if (lt >= 50) return '≥50%';
+    if (lt >= 30) return '≥30%';
+    if (lt >= 20) return '≥20%';
+    if (lt >= 10) return '≥10%';
+    return '';
+  }
+
+  function buildHead(){
+    var tr = document.getElementById('head');
+    tr.innerHTML = '<th class="corner">LP ticket \\ Fund&nbsp;% of bank</th>' +
+      fundCols.map(function(f){ return '<th>'+f+'%</th>'; }).join('');
+  }
+
+  function render(){
+    var size = parseInt(sizeEl.value,10);
+    sizeOut.textContent = fmtMoney(size);
+    var rows = document.getElementById('rows');
+    rows.innerHTML = lpAmounts.map(function(amt){
+      var lpPct = amt / size * 100;                         // LP % of Fund I
+      var th = '<th>'+fmtMoney(amt)+'<small>'+fmtPct(lpPct)+' of Fund I</small></th>';
+      var cells = fundCols.map(function(f){
+        var lt = lpPct/100 * f;                             // look-through % in bank
+        var cls = classify(lt);
+        var tag = cls === 'notif' ? '<span class="band">'+bandTag(lt)+'</span>' : '';
+        var title = fmtMoney(amt)+' → '+fmtPct(lpPct)+' of Fund I → '+fmtPct(lt)+
+                    ' of bank ('+(cls==='notif'?'notification':cls==='disc'?'disclosure only':'no requirement')+')';
+        return '<td class="'+cls+'" title="'+title+'"><span class="lt">'+fmtPct(lt)+'</span>'+tag+'</td>';
+      }).join('');
+      return '<tr>'+th+cells+'</tr>';
+    }).join('');
+  }
+
+  buildHead();
+  render();
+  sizeEl.addEventListener('input', render);
+  Array.prototype.forEach.call(document.querySelectorAll('.presets button'), function(b){
+    b.addEventListener('click', function(){ sizeEl.value = b.getAttribute('data-v'); render(); });
+  });
+</script>
+</body>
+</html>
